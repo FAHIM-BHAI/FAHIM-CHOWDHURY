@@ -1,39 +1,46 @@
+const axios = require("axios");
+
 module.exports = {
   config: {
     name: "ai",
     version: "1.0.0",
     permission: 0,
-    credits: "Nayan",
-    description: "",
-    prefix: true,
+    credits: "ArYAN",
+    description: "Ask questions to AI",
+    prefix: "awto",
     category: "user",
     usages: "query",
     cooldowns: 5,
     dependencies: {
+      axios: ""
     }
   },
 
-  start: async function({ nayan, events, args, Users, NAYAN }) {
-    const axios = require("axios");
-    const request = require("request");
-    const fs = require("fs-extra");
-    const id = nayan.getCurrentUserID()
+  start: async function({ aryan, events, args, Users, ARYAN }) {
     const uid = events.senderID;
-    const nn = await Users.getNameUser(uid);
-    const np = args.join(" ");
+    const userName = await Users.getNameUser(uid);
+    const question = args.join(" ");
 
+    if (!question) {
+      return ARYAN.reply("❌ Please provide a question.");
+    }
 
     try {
-      const apis = await axios.get('https://raw.githubusercontent.com/MOHAMMAD-NAYAN-07/Nayan/main/api.json');
-      const apiss = apis.data.api;
-      const response = await axios.get(`${apiss}/nayan/gpt3?prompt=${encodeURIComponent(np)}`);
-      const aiResponse = response.data.response || 'I am unable to process your request at the moment.';
+      const res = await axios.get("https://xyz-naruto-api.onrender.com/aryan/gemini", {
+        params: { ask: `${userName}: ${question}` }
+      });
 
+      const rawAnswer = res.data.answer || res.data.message || "No response from AI.";
+      const answer = `Hello ${userName}! ${rawAnswer}`;
+      
+      const msg = `🍒 𝗙𝗔𝗛𝗜𝗠 𝗔𝗜 🍒\n❍━━━━━━━━━━━━━❍\n${answer}\n❍━━━━━━━━━━━━━❍`;
 
-        await NAYAN.sendContact(aiResponse, id, events.threadID);
+      await ARYAN.react("✅");
+      return ARYAN.reply(msg);
 
     } catch (error) {
-      console.error("Error while processing GPT request:", error);
+      console.error("AI API Error:", error.message);
+      return ARYAN.reply("❌ Failed to get response from the AI API.");
     }
   }
 };
