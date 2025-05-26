@@ -16,13 +16,13 @@ module.exports = {
     }
   },
 
-  start: async function({ aryan, events, args, Users, ARYAN }) {
-    const uid = events.senderID;
+  start: async function({ api, event, args, Users }) {
+    const uid = event.senderID;
     const userName = await Users.getNameUser(uid);
     const question = args.join(" ");
 
     if (!question) {
-      return ARYAN.reply("❌ Please provide a question.");
+      return api.sendMessage("❌ Please provide a question.", event.threadID, event.messageID);
     }
 
     try {
@@ -35,12 +35,12 @@ module.exports = {
       
       const msg = `🍒 𝗙𝗔𝗛𝗜𝗠 𝗔𝗜 🍒\n❍━━━━━━━━━━━━━❍\n${answer}\n❍━━━━━━━━━━━━━❍`;
 
-      await ARYAN.react("✅");
-      return ARYAN.reply(msg);
+      await api.setMessageReaction("✅", event.messageID, event.threadID, true);
+      return api.sendMessage(msg, event.threadID, event.messageID);
 
     } catch (error) {
       console.error("AI API Error:", error.message);
-      return ARYAN.reply("❌ Failed to get response from the AI API.");
+      return api.sendMessage("❌ Failed to get response from the AI API.", event.threadID, event.messageID);
     }
   }
 };
